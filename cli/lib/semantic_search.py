@@ -3,6 +3,18 @@ from sentence_transformers import SentenceTransformer
 from pathlib import Path
 from .search_utils import CACHE_DIR, load_movies
 
+# ------------------- Add this outside the class -----------------------------
+def cosine_similarity(vec1: np.ndarray, vec2: np.ndarray) -> float:
+    dot_product = np.dot(vec1, vec2)
+    norm1 = np.linalg.norm(vec1)
+    norm2 = np.linalg.norm(vec2)
+
+    if norm1 == 0 or norm2 == 0:
+        return 0.0
+    
+    return dot_product / (norm1 * norm2)
+# ----------------------------------------------------------------------------
+
 class SemanticSearch:
     def __init__(self) -> None:
         self.model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -46,6 +58,30 @@ class SemanticSearch:
                 return self.build_embeddings(documents)
         else:
             return self.build_embeddings(documents)
+    
+    def search(self, query: str, limit: int = 5) -> list[dict]:
+        if self.embeddings is None or self.documents is None:
+            raise ValueError("No embeddings loaded. Call verify_embeddings command first.")
+
+        query_embedding = self.generate_embedding(query)
+        
+        scores_and_docs = []
+        for emb, doc in zip(self.embeddings, self.documents):
+            score = cosine_similarity(emb, query_embedding)
+            scores_and_docs.append((score, doc))
+
+        scores_and_docs.sort(key=lambda x: x[0], reverse=True)
+        top = scores_and_docs[:max(0, limit)]
+
+        result = []
+        for score, doc in top:
+            result.append({
+                "score": float(score),
+                "title": doc.get("title", ""),
+                "description": doc.get("description", ""),
+            })
+        
+        return result
 
 def verify_model() -> None:
     """Initialize the SemanticSearch model and print its configuration."""

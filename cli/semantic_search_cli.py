@@ -2,7 +2,17 @@
 
 import argparse
 
-from lib.semantic_search import verify_model, embed_text, verify_embeddings, embed_query_text
+from lib.semantic_search import (
+    verify_model, 
+    embed_text,
+    verify_embeddings,
+    embed_query_text,
+    SemanticSearch,
+)
+from lib.search_utils import load_movies
+
+def _truncate(text: str, max_len: int = 120) -> str:
+    return (text[:max_len] + "...") if len(text) > max_len else text
 
 def main():
     parser = argparse.ArgumentParser(description="Semantic Search CLI")
@@ -26,6 +36,11 @@ def main():
     eq_parser = subparsers.add_parser("embedquery", help="Embed a user query")
     eq_parser.add_argument("query", type=str, help="Query to embed")
 
+    # --- Search Command ---
+    search_parser = subparsers.add_parser("search", help="Search for movies")
+    search_parser.add_argument("query", type=str, help="Query to search for")
+    search_parser.add_argument("--limit", type=int, default=5, help="Number of results to return")
+
     args = parser.parse_args()
 
     match args.command:
@@ -37,6 +52,16 @@ def main():
             verify_embeddings()
         case "embedquery":
             embed_query_text(args.query)
+        case "search":
+            docs = load_movies()
+            search_instance = SemanticSearch()
+            search_instance.load_or_create_embeddings(docs)
+
+            results = search_instance.search(args.query, args.limit)
+            
+            for i, result in enumerate(results):
+                print(f"{i}. {result['title']} (score: {result['score']:.4f})")
+                print(f"   {_truncate(result['description'])}\n")
         case _:
             parser.print_help()
 
