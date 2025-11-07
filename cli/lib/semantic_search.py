@@ -1,7 +1,11 @@
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from pathlib import Path
-from .search_utils import CACHE_DIR, load_movies
+from .search_utils import (
+    CACHE_DIR,
+    DEFAULT_SEARCH_LIMIT,
+    load_movies,
+)
 
 # ------------------- Add this outside the class -----------------------------
 def cosine_similarity(vec1: np.ndarray, vec2: np.ndarray) -> float:
@@ -59,7 +63,7 @@ class SemanticSearch:
         else:
             return self.build_embeddings(documents)
     
-    def search(self, query: str, limit: int = 5) -> list[dict]:
+    def search(self, query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> list[dict]:
         if self.embeddings is None or self.documents is None:
             raise ValueError("No embeddings loaded. Call verify_embeddings command first.")
 
@@ -130,3 +134,21 @@ def embed_query_text(query: str) -> None:
         print(f"Shape: {embedding.shape}")
     except Exception as e:
         print(f"Failed to embed query: {e}")
+
+def semantic_search(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> None:
+    try:
+        docs = load_movies()
+        search_instance = SemanticSearch()
+        search_instance.load_or_create_embeddings(docs)
+
+        results = search_instance.search(query, limit)
+
+        print(f"\nQuery: {query}\n")
+        print(f"Top {len(results)} results:")
+        
+        for i, result in enumerate(results, 1):
+            print(f"{i}. {result['title']} (score: {result['score']:.4f})")
+            print(f"   {result['description'][:100]}...\n")
+
+    except Exception as e:
+        print(f"Failed to perform semantic search: {e}")

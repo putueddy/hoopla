@@ -7,9 +7,8 @@ from lib.semantic_search import (
     embed_text,
     verify_embeddings,
     embed_query_text,
-    SemanticSearch,
+    semantic_search,
 )
-from lib.search_utils import load_movies
 
 def _truncate(text: str, max_len: int = 120) -> str:
     return (text[:max_len] + "...") if len(text) > max_len else text
@@ -53,15 +52,7 @@ def main():
         case "embedquery":
             embed_query_text(args.query)
         case "search":
-            docs = load_movies()
-            search_instance = SemanticSearch()
-            search_instance.load_or_create_embeddings(docs)
-
-            results = search_instance.search(args.query, args.limit)
-            
-            for i, result in enumerate(results):
-                print(f"{i}. {result['title']} (score: {result['score']:.4f})")
-                print(f"   {_truncate(result['description'])}\n")
+            semantic_search(args.query, args.limit)
         case _:
             parser.print_help()
 
