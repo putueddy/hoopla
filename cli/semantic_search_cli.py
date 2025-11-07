@@ -8,7 +8,9 @@ from lib.semantic_search import (
     verify_embeddings,
     embed_query_text,
     semantic_search,
+    chunk_text,
 )
+from lib.search_utils import DEFAULT_CHUNK_SIZE
 
 def _truncate(text: str, max_len: int = 120) -> str:
     return (text[:max_len] + "...") if len(text) > max_len else text
@@ -40,6 +42,11 @@ def main():
     search_parser.add_argument("query", type=str, help="Query to search for")
     search_parser.add_argument("--limit", type=int, default=5, help="Number of results to return")
 
+    # --- Chunk Command ---
+    chunk_parser = subparsers.add_parser("chunk", help="Split text into fixed-size chunks")
+    chunk_parser.add_argument("text", type=str, help="Text to chunk")
+    chunk_parser.add_argument("--chunk-size", type=int, default=DEFAULT_CHUNK_SIZE, help="Size of each chunk in words")
+
     args = parser.parse_args()
 
     match args.command:
@@ -53,6 +60,8 @@ def main():
             embed_query_text(args.query)
         case "search":
             semantic_search(args.query, args.limit)
+        case "chunk":
+            chunk_text(args.text, args.chunk_size)
         case _:
             parser.print_help()
 

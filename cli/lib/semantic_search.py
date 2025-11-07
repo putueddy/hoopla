@@ -1,9 +1,9 @@
 import numpy as np
 from sentence_transformers import SentenceTransformer
-from pathlib import Path
 from .search_utils import (
     CACHE_DIR,
     DEFAULT_SEARCH_LIMIT,
+    DEFAULT_CHUNK_SIZE,
     load_movies,
 )
 
@@ -152,3 +152,26 @@ def semantic_search(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> None:
 
     except Exception as e:
         print(f"Failed to perform semantic search: {e}")
+
+def fixed_size_chunking(text: str, chunk_size: int = DEFAULT_CHUNK_SIZE) -> list[str]:
+    words = text.strip().split()
+    if not words:
+        return []
+
+    chunks = []
+    for i in range(0, len(words), chunk_size):
+        chunk = " ".join(words[i:i + chunk_size])
+        chunks.append(chunk)
+    
+    return chunks
+
+def chunk_text(text: str, chunk_size: int = DEFAULT_CHUNK_SIZE) -> list[str]:
+    try:
+        chunks = fixed_size_chunking(text, chunk_size)
+        print(f"Chunking {len(text)} characters")
+        for i, chunk in enumerate(chunks, 1):
+            print(f"{i}: {chunk}")
+    except Exception as e:
+        print(f"Failed to chunk text: {e}")
+
+        
