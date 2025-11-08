@@ -4,6 +4,7 @@ from .search_utils import (
     CACHE_DIR,
     DEFAULT_SEARCH_LIMIT,
     DEFAULT_CHUNK_SIZE,
+    DEFAULT_CHUNK_OVERLAP,
     load_movies,
 )
 
@@ -153,21 +154,25 @@ def semantic_search(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> None:
     except Exception as e:
         print(f"Failed to perform semantic search: {e}")
 
-def fixed_size_chunking(text: str, chunk_size: int = DEFAULT_CHUNK_SIZE) -> list[str]:
+def fixed_size_chunking(text: str, chunk_size: int = DEFAULT_CHUNK_SIZE, overlap: int = DEFAULT_CHUNK_OVERLAP) -> list[str]:
     words = text.strip().split()
     if not words:
         return []
 
     chunks = []
-    for i in range(0, len(words), chunk_size):
-        chunk = " ".join(words[i:i + chunk_size])
-        chunks.append(chunk)
+    start = 0
+    while start < len(words):
+        chunk = words[start:start + chunk_size]
+        if chunks and len(chunk) <= overlap:
+            break
+        chunks.append(" ".join(chunk))
+        start += chunk_size - overlap
     
     return chunks
 
-def chunk_text(text: str, chunk_size: int = DEFAULT_CHUNK_SIZE) -> list[str]:
+def chunk_text(text: str, chunk_size: int = DEFAULT_CHUNK_SIZE, overlap: int = DEFAULT_CHUNK_OVERLAP) -> list[str]:
     try:
-        chunks = fixed_size_chunking(text, chunk_size)
+        chunks = fixed_size_chunking(text, chunk_size, overlap)
         print(f"Chunking {len(text)} characters")
         for i, chunk in enumerate(chunks, 1):
             print(f"{i}: {chunk}")

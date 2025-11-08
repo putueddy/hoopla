@@ -10,7 +10,7 @@ from lib.semantic_search import (
     semantic_search,
     chunk_text,
 )
-from lib.search_utils import DEFAULT_CHUNK_SIZE
+from lib.search_utils import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP
 
 def _truncate(text: str, max_len: int = 120) -> str:
     return (text[:max_len] + "...") if len(text) > max_len else text
@@ -46,6 +46,7 @@ def main():
     chunk_parser = subparsers.add_parser("chunk", help="Split text into fixed-size chunks")
     chunk_parser.add_argument("text", type=str, help="Text to chunk")
     chunk_parser.add_argument("--chunk-size", type=int, default=DEFAULT_CHUNK_SIZE, help="Size of each chunk in words")
+    chunk_parser.add_argument("--overlap", type=int, default=DEFAULT_CHUNK_OVERLAP, help="Number of words to overlap between chunks")
 
     args = parser.parse_args()
 
@@ -61,7 +62,7 @@ def main():
         case "search":
             semantic_search(args.query, args.limit)
         case "chunk":
-            chunk_text(args.text, args.chunk_size)
+            chunk_text(args.text, args.chunk_size, args.overlap)
         case _:
             parser.print_help()
 

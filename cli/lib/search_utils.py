@@ -5,6 +5,7 @@ DEFAULT_SEARCH_LIMIT = 5
 BM25_K1 = 1.5
 BM25_B = 0.75
 DEFAULT_CHUNK_SIZE = 200
+DEFAULT_CHUNK_OVERLAP = 0
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DATA_PATH = PROJECT_ROOT / "data" / "movies.json"
