@@ -6,11 +6,15 @@ BM25_K1 = 1.5
 BM25_B = 0.75
 DEFAULT_CHUNK_SIZE = 200
 DEFAULT_CHUNK_OVERLAP = 0
+DEFAULT_SEMANTIC_CHUNK_SIZE = 4
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DATA_PATH = PROJECT_ROOT / "data" / "movies.json"
 STOPWORDS_PATH = PROJECT_ROOT / "data" / "stopwords.txt"
 CACHE_DIR = PROJECT_ROOT / "cache"
+
+CHUNK_EMBEDDINGS_PATH = CACHE_DIR / "chunk_embeddings.npy"
+CHUNK_METADATA_PATH = CACHE_DIR / "chunk_metadata.json"
 
 
 def load_movies() -> list[dict]:
