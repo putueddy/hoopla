@@ -187,17 +187,40 @@ def chunk_text(text: str, chunk_size: int = DEFAULT_CHUNK_SIZE, overlap: int = D
         print(f"Failed to chunk text: {e}")
 
 def semantic_chunking(text: str, max_chunk_size: int = DEFAULT_SEMANTIC_CHUNK_SIZE, overlap: int = DEFAULT_CHUNK_OVERLAP) -> list[str]:
-    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+    # Strip leading and trailing whitespace from input text
+    text = text.strip()
+    
+    # If there's nothing left after stripping, return empty list
+    if not text:
+        return []
+    
+    # Split sentences using regex
+    sentences = re.split(r"(?<=[.!?])\s+", text)
+    
+    # Handle case where there's only one sentence without proper punctuation
+    if len(sentences) == 1 and not re.search(r'[.!?]$', sentences[0].strip()):
+        # Treat the whole text as one sentence
+        stripped_sentence = sentences[0].strip()
+        return [stripped_sentence] if stripped_sentence else []
+    
+    # Strip whitespace from each sentence and filter out empty ones
+    sentences = [sentence.strip() for sentence in sentences if sentence.strip()]
+    
     if not sentences:
         return []
 
     chunks = []
     start = 0
     while start < len(sentences):
-        chunk = sentences[start:start + max_chunk_size]
-        if chunks and len(chunk) <= overlap:
+        chunk_sentences = sentences[start:start + max_chunk_size]
+        if chunks and len(chunk_sentences) <= overlap:
             break
-        chunks.append(" ".join(chunk))
+        
+        # Join sentences and only add if there's content after stripping
+        chunk_text = " ".join(chunk_sentences).strip()
+        if chunk_text:
+            chunks.append(chunk_text)
+        
         start += max_chunk_size - overlap
     
     return chunks
@@ -207,7 +230,7 @@ def semantic_chunk_text(text: str, max_chunk_size: int = DEFAULT_SEMANTIC_CHUNK_
         chunks = semantic_chunking(text, max_chunk_size, overlap)
         print(f"Semantically chunking {len(text)} characters")
         for i, chunk in enumerate(chunks, 1):
-            print(f"{i}: {chunk}")
+            print(f"{i}. {chunk}")
     except Exception as e:
         print(f"Failed to semantic chunk text: {e}")
 
