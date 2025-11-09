@@ -10,7 +10,8 @@ from lib.semantic_search import (
     semantic_search,
     chunk_text,
     semantic_chunk_text,
-    embed_chunks
+    embed_chunks,
+    search_chunked_command,
 )
 from lib.search_utils import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP, DEFAULT_SEMANTIC_CHUNK_SIZE
 
@@ -59,6 +60,11 @@ def main():
     # --- Embed Chunks Command ---
     subparsers.add_parser("embed_chunks", help="Generate embeddings for document chunks")
 
+    # --- Search Chunks Command ---
+    search_chunk_parser = subparsers.add_parser("search_chunked", help="Search for movies using chunked embeddings")
+    search_chunk_parser.add_argument("query", type=str, help="Query to search for")
+    search_chunk_parser.add_argument("--limit", type=int, default=5, help="Number of results to return")
+
     args = parser.parse_args()
 
     match args.command:
@@ -78,6 +84,13 @@ def main():
             semantic_chunk_text(args.text, args.max_chunk_size, args.overlap)
         case "embed_chunks":
             embed_chunks()
+        case "search_chunked":
+            results = search_chunked_command(args.query, args.limit)
+            print(f"\nQuery: {results['query']}\n")
+            print("Results:")
+            for i, result in enumerate(results['results'], 1):
+                print(f"\n{i}. {result['title']} (score: {result['score']:.4f})")
+                print(f"   {result['document']}...")
         case _:
             parser.print_help()
 
